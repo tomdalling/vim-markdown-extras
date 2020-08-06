@@ -27,7 +27,7 @@ Default normal-mode mappings:
 
  - `gF` (go file, with GUSTO)
 
-## `<Plug>markdown_extras-para-wrap'`
+## `<Plug>(markdown_extras-para-wrap)`
 
 Hard-wraps the paragraph under the cursor.
 
