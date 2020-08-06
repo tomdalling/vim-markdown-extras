@@ -13,10 +13,10 @@ endif
 let g:loaded_markdown_extras = 1
 
 " <Plug> mappings
-nnoremap <Plug>(markdown_extras-link-edit)
-  \ call markdown_extras#link#run_with_url('edit')
-nnoremap <Plug>(markdown_extras-link-vsplit)
-  \ call markdown_extras#link#run_with_url('vsplit')
+nnoremap <silent> <Plug>(markdown_extras-link-edit)
+  \ :call markdown_extras#link#run_with_url('edit')<cr>
+nnoremap <silent> <Plug>(markdown_extras-link-vsplit)
+  \ :call markdown_extras#link#run_with_url('vsplit')<cr>
 nnoremap <Plug>(markdown_extras-para-wrap) vipgq$
 
 " compatibility crap
