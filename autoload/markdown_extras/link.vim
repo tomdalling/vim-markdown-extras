@@ -15,9 +15,8 @@ endfunction
 " TODO: only handles [inline](links.md) not [reference links][]
 " returns empty string on failure
 function! s:url_of_link_under_cursor() abort
-  if !exists('*matchup#init')
+  if !get(g:, 'loaded_matchup')
     echoerr 'matchup.vim must be installed for markdown url detection to work'
-    return ''
   endif
 
   let l:initial_pos = getpos(".")
