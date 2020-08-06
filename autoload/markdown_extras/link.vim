@@ -1,14 +1,15 @@
 function! markdown_extras#link#run_with_url(cmd) abort
   let l:url = s:url_of_link_under_cursor()
   if l:url ==# ''
-    echoerr 'markdown_extras: Failed to determine path of link'
+    echoerr 'markdown_extras: failed to determine path of link'
   else
     exe a:cmd fnameescape(l:url)
   endif
 endfunction
 
-function! markdown_extras#link#complete() abort
-  return s:choose_document()
+function! markdown_extras#link#complete(...) abort
+  let l:extra_fzf_options = a:0 > 0 ? a:1 : {}
+  return s:completion_expr(l:extra_fzf_options)
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -19,7 +20,7 @@ endfunction
 " returns empty string on failure
 function! s:url_of_link_under_cursor() abort
   if !get(g:, 'loaded_matchup')
-    echoerr 'matchup.vim must be installed for markdown url detection to work'
+    echoerr 'markdown_extras: matchup.vim must be installed for markdown url detection to work'
   endif
 
   let l:initial_pos = getpos(".")
@@ -59,13 +60,12 @@ function! s:get_text_in_parens() abort
   return l:text
 endfunction
 
-function! s:choose_document(...) abort
+function! s:completion_expr(extra_fzf_options) abort
   if !exists('*fzf#complete')
     echoerr 'fzf.vim must be installed for markdown link completion'
     return ''
   endif
 
-  let l:extra_fzf_options = a:0 > 0 ? a:1 : {}
   " NOTE: the 'placeholder' option is undocumented. It's the "{}" part of the
   " preview command on the FZF command line
   let l:fzf_options = {
@@ -73,19 +73,43 @@ function! s:choose_document(...) abort
     \ 'source': 'rg --files -0 | xargs -0 awk ''{print FILENAME "\t" $0}{nextfile}''',
     \ 'options': ['--delimiter=\\t'],
     \ 'placeholder': '{1}',
-    \ 'reducer': function('<SID>choose_document_reducer'),
   \}
 
+  let l:pos = getpos('.')
+  let l:prev_char = matchstr(strpart(getline(l:pos[1]), 0, l:pos[2]-1), '\v[\[(]$')
+
+  if l:prev_char ==# '('
+    let l:fzf_options.reducer = function('<SID>reduce_to_url_end')
+  elseif l:prev_char ==# '['
+    let l:fzf_options.reducer = function('<SID>reduce_to_full_link_end')
+  else
+    let l:fzf_options.reducer = function('<SID>reduce_to_full_link')
+  endif
+
   return fzf#vim#complete(
-    \ fzf#vim#with_preview(
-      \ extend(l:fzf_options, l:extra_fzf_options)
+    \ fzf#vim#with_preview(extend(l:fzf_options, a:extra_fzf_options))
     \ )
-  \)
 endfunction
 
-" NOTE: only handles single item atm
-function! s:choose_document_reducer(lines) abort
-  let [l:path, l:title] = split(a:lines[0], "\t")
-  return '[' . trim(trim(l:title, '#')) . '](' . l:path . ')'
+function! s:reduce_to_full_link_end(lines) abort
+  let l:link = s:parse_fzf_line(a:lines[0])
+  return  l:link.title . '](' . l:link.path . ')'
+endfunction
+
+function! s:reduce_to_full_link(lines) abort
+  return '[' . s:reduce_to_full_link_end(a:lines)
+endfunction
+
+function! s:reduce_to_url_end(lines) abort
+  let l:link = s:parse_fzf_line(a:lines[0])
+  return l:link.path . ')'
+endfunction
+
+function! s:parse_fzf_line(line) abort
+  let [l:path, l:title] = split(a:line, "\t")
+  return {
+    \ 'title': trim(trim(l:title, '#')),
+    \ 'path': l:path,
+    \ }
 endfunction
 

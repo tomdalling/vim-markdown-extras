@@ -38,7 +38,7 @@ Default normal-mode mappings:
 ## `<Plug>(markdown_extras-link-complete)`
 
 Opens FZF to choose a markdown file to link to, and inserts a link using the
-title of the chosen file.
+first line (usually the title) of the chosen file.
 
 Default insert-mode mappings:
 
@@ -46,8 +46,13 @@ Default insert-mode mappings:
 
 ## Testing (ignore this)
 
-[inline link](ftplugin/markdown.vim)
+[Inline link](ftplugin/markdown.vim)
 
-[multiline
+[Multiline
 inline
 link](autoload/markdown_extras/link.vim)
+
+Completion after [
+
+Completion after (
+
