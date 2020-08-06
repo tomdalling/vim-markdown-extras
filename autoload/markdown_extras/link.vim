@@ -66,46 +66,38 @@ function! s:completion_expr(extra_fzf_options) abort
     return ''
   endif
 
+  let l:LineParser = get(a:extra_fzf_options, 'line_parser', function('<SID>default_line_parser'))
+
   " NOTE: the 'placeholder' option is undocumented. It's the "{}" part of the
   " preview command on the FZF command line
-  let l:fzf_options = {
+  let l:default_fzf_options = {
     \ 'prefix': '',
     \ 'source': 'rg --files -0 | xargs -0 awk ''{print FILENAME "\t" $0}{nextfile}''',
+    \ 'reducer': { lines -> s:build_link(l:LineParser(lines[0])) },
     \ 'options': ['--delimiter=\\t'],
     \ 'placeholder': '{1}',
   \}
 
-  let l:pos = getpos('.')
-  let l:prev_char = matchstr(strpart(getline(l:pos[1]), 0, l:pos[2]-1), '\v[\[(]$')
-
-  if l:prev_char ==# '('
-    let l:fzf_options.reducer = function('<SID>reduce_to_url_end')
-  elseif l:prev_char ==# '['
-    let l:fzf_options.reducer = function('<SID>reduce_to_full_link_end')
-  else
-    let l:fzf_options.reducer = function('<SID>reduce_to_full_link')
+  let l:full_fzf_options = extend(l:default_fzf_options, a:extra_fzf_options)
+  if has_key(l:full_fzf_options, 'line_parser')
+    unlet l:full_fzf_options.line_parser
   endif
 
-  return fzf#vim#complete(
-    \ fzf#vim#with_preview(extend(l:fzf_options, a:extra_fzf_options))
-    \ )
+  return fzf#vim#complete(fzf#vim#with_preview(l:full_fzf_options))
 endfunction
 
-function! s:reduce_to_full_link_end(lines) abort
-  let l:link = s:parse_fzf_line(a:lines[0])
-  return  l:link.title . '](' . l:link.path . ')'
+function! s:build_link(link)
+  let l:prev_char = s:get_char_under_cursor()
+  if l:prev_char ==# '('
+    return a:link.path . ')'
+  elseif l:prev_char ==# '['
+    return a:link.title . '](' . a:link.path . ')'
+  else
+    return '[' . a:link.title . '](' . a:link.path . ')'
+  endif
 endfunction
 
-function! s:reduce_to_full_link(lines) abort
-  return '[' . s:reduce_to_full_link_end(a:lines)
-endfunction
-
-function! s:reduce_to_url_end(lines) abort
-  let l:link = s:parse_fzf_line(a:lines[0])
-  return l:link.path . ')'
-endfunction
-
-function! s:parse_fzf_line(line) abort
+function! s:default_line_parser(line) abort
   let [l:path, l:title] = split(a:line, "\t")
   return {
     \ 'title': trim(trim(l:title, '#')),
