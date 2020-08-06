@@ -18,4 +18,8 @@ if g:markdown_extras_enable_mappings
     nmap <buffer> <cr> <Plug>(markdown_extras-para-wrap)
   endif
 
+  if !hasmapto('<Plug>markdown_extras-link-complete', 'i')
+    imap <buffer> <c-x><c-l> <Plug>(markdown_extras-link-complete)
+  endif
+
 endif

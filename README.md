@@ -35,6 +35,14 @@ Default normal-mode mappings:
 
  - `<cr>`
 
+## `<Plug>(markdown_extras-link-complete)`
+
+Opens FZF to choose a markdown file to link to, and inserts a link using the
+title of the chosen file.
+
+Default insert-mode mappings:
+
+ - `<c-x><c-l>` complete link
 
 ## Testing (ignore this)
 

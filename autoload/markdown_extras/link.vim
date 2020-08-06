@@ -7,6 +7,9 @@ function! markdown_extras#link#run_with_url(cmd) abort
   endif
 endfunction
 
+function! markdown_extras#link#complete() abort
+  return s:choose_document()
+endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " PRIVATE
@@ -54,5 +57,35 @@ function! s:get_text_in_parens() abort
 
   let @z = l:initial_z
   return l:text
+endfunction
+
+function! s:choose_document(...) abort
+  if !exists('*fzf#complete')
+    echoerr 'fzf.vim must be installed for markdown link completion'
+    return ''
+  endif
+
+  let l:extra_fzf_options = a:0 > 0 ? a:1 : {}
+  " NOTE: the 'placeholder' option is undocumented. It's the "{}" part of the
+  " preview command on the FZF command line
+  let l:fzf_options = {
+    \ 'prefix': '',
+    \ 'source': 'rg --files -0 | xargs -0 awk ''{print FILENAME "\t" $0}{nextfile}''',
+    \ 'options': ['--delimiter=\\t'],
+    \ 'placeholder': '{1}',
+    \ 'reducer': function('<SID>choose_document_reducer'),
+  \}
+
+  return fzf#vim#complete(
+    \ fzf#vim#with_preview(
+      \ extend(l:fzf_options, l:extra_fzf_options)
+    \ )
+  \)
+endfunction
+
+" NOTE: only handles single item atm
+function! s:choose_document_reducer(lines) abort
+  let [l:path, l:title] = split(a:lines[0], "\t")
+  return '[' . trim(trim(l:title, '#')) . '](' . l:path . ')'
 endfunction
 

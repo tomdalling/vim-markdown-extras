@@ -18,6 +18,8 @@ nnoremap <silent> <Plug>(markdown_extras-link-edit)
 nnoremap <silent> <Plug>(markdown_extras-link-vsplit)
   \ :call markdown_extras#link#run_with_url('vsplit')<cr>
 nnoremap <Plug>(markdown_extras-para-wrap) vipgq$
+inoremap <expr> <Plug>(markdown_extras-link-complete)
+  \ markdown_extras#link#complete()
 
 " compatibility crap
 let &cpo = s:save_cpo
