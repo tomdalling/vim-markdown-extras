@@ -35,10 +35,16 @@ Default normal-mode mappings:
 
  - `<cr>`
 
-## `<Plug>(markdown_extras-link-complete)`
+## `markdown_extras#link#complete()`
 
 Opens FZF to choose a markdown file to link to, and inserts a link using the
 first line (usually the title) of the chosen file.
+
+To define your own mapping, use `<expr>` like this:
+
+```vim
+inoremap <expr> <c-x><c-l> markdown_extras#link#complete()
+```
 
 Default insert-mode mappings:
 
