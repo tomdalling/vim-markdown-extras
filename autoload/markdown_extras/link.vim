@@ -45,9 +45,11 @@ function! s:url_of_link_under_cursor() abort
   return l:url
 endfunction
 
-function! s:get_char_under_cursor() abort
+function! s:get_char_under_cursor(...) abort
+  let l:col = col('.') + (a:0 == 0 ? 0 : a:1)
+  let l:col = max([1, l:col])
   " why is this so insane, vim?
-  return matchstr(getline('.'), '\%' . col('.') . 'c.')
+  return matchstr(getline('.'), '\%' . l:col . 'c.')
 endfunction
 
 function! s:get_text_in_parens() abort
@@ -87,11 +89,14 @@ function! s:completion_expr(extra_fzf_options) abort
 endfunction
 
 function! s:build_link(link)
-  let l:prev_char = s:get_char_under_cursor()
+  " -1 because we want the character before the insert-mode cursor
+  let l:prev_char = s:get_char_under_cursor(-1)
   if l:prev_char ==# '('
     return a:link.path . ')'
   elseif l:prev_char ==# '['
     return a:link.title . '](' . a:link.path . ')'
+  elseif l:prev_char ==# ']'
+    return '(' . a:link.path . ')'
   else
     return '[' . a:link.title . '](' . a:link.path . ')'
   endif
