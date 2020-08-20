@@ -3,6 +3,9 @@ function! markdown_extras#link#run_with_url(cmd) abort
   if l:url ==# ''
     echoerr 'markdown_extras: failed to determine path of link'
   else
+    if &autowrite
+      update
+    endif
     exe a:cmd fnameescape(l:url)
   endif
 endfunction
