@@ -53,12 +53,12 @@ function! s:get_char_under_cursor(...) abort
 endfunction
 
 function! s:get_text_in_parens() abort
-  let l:initial_z = @z
+  let l:initial_yank = @"
 
-  normal! "zyib
-  let l:text = @z
+  normal! yib
+  let l:text = @"
 
-  let @z = l:initial_z
+  let @" = l:initial_yank
   return l:text
 endfunction
 

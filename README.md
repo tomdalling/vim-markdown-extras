@@ -62,3 +62,4 @@ Completion after [
 
 Completion after (
 
+Complete [ inside ( paragraph
