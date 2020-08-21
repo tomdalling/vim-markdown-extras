@@ -12,7 +12,7 @@ endfunction
 
 function! markdown_extras#link#complete(...) abort
   let l:extra_fzf_options = a:0 > 0 ? a:1 : {}
-  return s:completion_expr(l:extra_fzf_options)
+  return s:completion_expr(col('.'), l:extra_fzf_options)
 endfunction
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -48,11 +48,14 @@ function! s:url_of_link_under_cursor() abort
   return l:url
 endfunction
 
-function! s:get_char_under_cursor(...) abort
-  let l:col = col('.') + (a:0 == 0 ? 0 : a:1)
-  let l:col = max([1, l:col])
+function! s:get_char_under_cursor() abort
   " why is this so insane, vim?
-  return matchstr(getline('.'), '\%' . l:col . 'c.')
+  return s:get_char_at_col(col('.'))
+endfunction
+
+function! s:get_char_at_col(col) abort
+  " why is this so insane, vim?
+  return matchstr(getline('.'), '\%' . a:col . 'c.')
 endfunction
 
 function! s:get_text_in_parens() abort
@@ -65,7 +68,7 @@ function! s:get_text_in_parens() abort
   return l:text
 endfunction
 
-function! s:completion_expr(extra_fzf_options) abort
+function! s:completion_expr(insert_col, extra_fzf_options) abort
   if !exists('*fzf#complete')
     echoerr 'fzf.vim must be installed for markdown link completion'
     return ''
@@ -78,7 +81,7 @@ function! s:completion_expr(extra_fzf_options) abort
   let l:default_fzf_options = {
     \ 'prefix': '',
     \ 'source': 'rg --files -0 | xargs -0 awk ''{print FILENAME "\t" $0}{nextfile}''',
-    \ 'reducer': { lines -> s:build_link(l:LineParser(lines[0])) },
+    \ 'reducer': { lines -> s:build_link(a:insert_col, l:LineParser(lines[0])) },
     \ 'options': ['--delimiter=\\t'],
     \ 'placeholder': '{1}',
   \}
@@ -91,9 +94,8 @@ function! s:completion_expr(extra_fzf_options) abort
   return fzf#vim#complete(fzf#vim#with_preview(l:full_fzf_options))
 endfunction
 
-function! s:build_link(link)
-  " -1 because we want the character before the insert-mode cursor
-  let l:prev_char = s:get_char_under_cursor(-1)
+function! s:build_link(insert_col, link)
+  let l:prev_char = a:insert_col > 0 ? s:get_char_at_col(a:insert_col-1) : ''
   if l:prev_char ==# '('
     return a:link.path . ')'
   elseif l:prev_char ==# '['

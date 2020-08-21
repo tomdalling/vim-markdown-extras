@@ -63,3 +63,7 @@ Completion after [
 Completion after (
 
 Complete [ inside ( paragraph
+
+Complete at start of line (below):
+
+
