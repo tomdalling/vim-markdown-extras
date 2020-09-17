@@ -50,20 +50,3 @@ Default insert-mode mappings:
 
  - `<c-x><c-l>` complete link
 
-## Testing (ignore this)
-
-[Inline link](ftplugin/markdown.vim)
-
-[Multiline
-inline
-link](autoload/markdown_extras/link.vim)
-
-Completion after [
-
-Completion after (
-
-Complete [ inside ( paragraph
-
-Complete at start of line (below):
-
-

@@ -1,12 +1,12 @@
-function! markdown_extras#link#run_with_url(cmd) abort
-  let l:url = s:url_of_link_under_cursor()
-  if l:url ==# ''
-    echoerr 'markdown_extras: failed to determine path of link'
+function! markdown_extras#link#run_with_href(cmd) abort
+  let l:href = s:href_of_link_under_cursor()
+  if l:href ==# ''
+    echoerr 'markdown_extras: failed to determine href of link'
   else
     if &autowrite
       update
     endif
-    exe a:cmd fnameescape(l:url)
+    exe a:cmd fnameescape(s:expand_href(l:href))
   endif
 endfunction
 
@@ -21,13 +21,13 @@ endfunction
 
 " TODO: only handles [inline](links.md) not [reference links][]
 " returns empty string on failure
-function! s:url_of_link_under_cursor() abort
+function! s:href_of_link_under_cursor() abort
   if !get(g:, 'loaded_matchup')
-    echoerr 'markdown_extras: matchup.vim must be installed for markdown url detection to work'
+    echoerr 'markdown_extras: matchup.vim must be installed for markdown href detection to work'
   endif
 
   let l:initial_pos = getpos(".")
-  let l:url = ''
+  let l:href = ''
 
   " jump to closest opening bracket
   call matchup#motion#find_unmatched(0, 0)
@@ -37,15 +37,34 @@ function! s:url_of_link_under_cursor() abort
     " move one character after the closing ]
     normal! %l
     if s:get_char_under_cursor() ==# '('
-      let l:url = s:get_text_in_parens()
+      let l:href = s:get_text_in_parens()
     endif
   elseif l:char ==# '('
-    let l:url = s:get_text_in_parens()
+    let l:href = s:get_text_in_parens()
   endif
 
   call setpos('.', l:initial_pos)
 
-  return l:url
+  return l:href
+endfunction
+
+function! s:expand_href(href) abort
+  " don't mess with full URLs
+  if a:href =~ '^[a-z]\+://'
+    return a:href
+  end
+
+  if a:href[0] ==# '/'
+    " absolute paths without a hostname (e.g. '/abc.md') are interpreted as
+    " relative to the current directory
+    let l:path = a:href[1:]
+  else
+    " otherwise, path is interpretted as being relative to the current file
+    let l:path = simplify(expand('%:h') . '/' . a:href)
+  endif
+
+  " TODO: could check for trailing slash and add 'index.md' or something
+  return l:path
 endfunction
 
 function! s:get_char_under_cursor() abort

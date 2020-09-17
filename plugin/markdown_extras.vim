@@ -14,9 +14,9 @@ let g:loaded_markdown_extras = 1
 
 " <Plug> mappings
 nnoremap <silent> <Plug>(markdown_extras-link-edit)
-  \ :call markdown_extras#link#run_with_url('edit')<cr>
+  \ :call markdown_extras#link#run_with_href('edit')<cr>
 nnoremap <silent> <Plug>(markdown_extras-link-vsplit)
-  \ :call markdown_extras#link#run_with_url('vsplit')<cr>
+  \ :call markdown_extras#link#run_with_href('vsplit')<cr>
 nnoremap <Plug>(markdown_extras-para-wrap) vipgq$
 
 " compatibility crap
